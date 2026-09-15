@@ -1,4 +1,4 @@
-import React,{useState}from'react';import{createRoot}from'react-dom/client';import{QRCodeSVG}from'qrcode.react';import{ArrowLeft,ArrowRight,Check,CheckCircle2,Clock3,Copy,FileCheck2,KeyRound,LockKeyhole,Menu,RefreshCw,ShieldCheck,Smartphone,Upload,UserRound,XCircle}from'lucide-react';import{createRecoveryPhrase,isValidRecoveryPhrase,recoveryVerifier}from'./lib/walletAuth';import{supabase}from'./lib/supabase';import'./styles.css';
+import React,{useState}from'react';import{createRoot}from'react-dom/client';import{QRCodeSVG}from'qrcode.react';import{ArrowLeft,ArrowRight,Check,CheckCircle2,Clock3,Copy,FileCheck2,KeyRound,LockKeyhole,Menu,RefreshCw,ShieldCheck,Smartphone,Upload,UserRound,WalletCards,XCircle}from'lucide-react';import{createRecoveryPhrase,isValidRecoveryPhrase,recoveryVerifier}from'./lib/walletAuth';import{supabase}from'./lib/supabase';import'./styles.css';
 
 type Screen='welcome'|'phrase'|'login'|'home'|'deposit'|'withdraw'|'orders'|'profile'|'adminLogin'|'admin';type Status='pending'|'verified'|'rejected';type Network={name:string;standard:string;ticker:string;address:string};
 const RATE=107,MIN=500;const initialWallets:Network[]=[
