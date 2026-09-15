@@ -1,0 +1,42 @@
+name: Fix TrustPay build
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix source
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('src/main.tsx')
+          s=p.read_text()
+          s=s.replace("notify('Wallet created with 0 USDT')}}catch{notify('Invalid recovery phrase')}};", "notify('Wallet created with 0 USDT')}catch{notify('Invalid recovery phrase')}};")
+          s=s.replace(",FileCheck2", "")
+          s=s.replace("|'adminLogin'|'admin'", "|'admin'")
+          s=s.replace("const[adminEmail,setAdminEmail]=useState('');const[adminOtp,setAdminOtp]=useState('');const[otpSent,setOtpSent]=useState(false);", "")
+          start=s.find(" const sendOtp=async()=>")
+          end=s.find(" const Header=", start)
+          if start != -1 and end != -1: s=s[:start]+s[end:]
+          start=s.find(" if(screen==='adminLogin')")
+          end=s.find(" if(screen==='deposit')", start)
+          if start != -1 and end != -1: s=s[:start]+s[end:]
+          p.write_text(s)
+          PY
+          npm install
+          npm run build
+      - name: Commit source fix
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/main.tsx
+          git diff --cached --quiet && exit 0
+          git commit -m "Fix build syntax and remove admin login"
+          git push
