@@ -1,0 +1,44 @@
+name: Apply TrustPay deposit validation
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Patch source and verify build
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('src/main.tsx')
+          s=p.read_text()
+          s=s.replace("notify('Wallet created with 0 USDT')}}catch{notify('Invalid recovery phrase')}};", "notify('Wallet created with 0 USDT')}catch{notify('Invalid recovery phrase')}};")
+          old="<label className=\"field\">AMOUNT SENT<input value={depositAmount} inputMode=\"decimal\" onChange={e=>setDepositAmount(e.target.value.replace(/[^0-9.]/g,''))}/><span>USDT</span></label>"
+          new="<label className=\"field\">AMOUNT SENT<input value={depositAmount} inputMode=\"decimal\" onChange={e=>setDepositAmount(e.target.value.replace(/[^0-9.]/g,''))}/><span>USDT</span></label>{depositAmount.trim()!==''&&Number(depositAmount)<MIN&&<div className=\"danger\"><span>!</span>Minimum deposit is 500 USDT.</div>}"
+          if old not in s: raise SystemExit('deposit amount field not found')
+          s=s.replace(old,new,1)
+          old_btn="<button onClick={submitDeposit}>Submit for verification <ArrowRight/></button>"
+          new_btn="<button disabled={!Number.isFinite(Number(depositAmount))||Number(depositAmount)<MIN} onClick={submitDeposit}>Submit for verification <ArrowRight/></button>"
+          if old_btn not in s: raise SystemExit('deposit submit button not found')
+          s=s.replace(old_btn,new_btn,1)
+          p.write_text(s)
+          PY
+          npm install
+          npm run build
+      - name: Commit source changes and remove patch workflow
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/main.tsx .github/workflows/patch-deposit.yml
+          git commit -m "Add 500 USDT minimum deposit validation"
+          git rm .github/workflows/patch-deposit.yml
+          git commit -m "Remove temporary deposit patch workflow"
+          git push
