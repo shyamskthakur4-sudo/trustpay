@@ -15,3 +15,8 @@ export async function recoveryVerifier(words: string[]): Promise<string> {
 export function isValidRecoveryPhrase(words:string[]):boolean{
   return validateMnemonic(words.join(' ').trim().toLowerCase().replace(/\s+/g,' '),wordlist);
 }
+
+export function pickRecoveryCheck(words:string[]):{index:number;word:string}{
+  const index=Math.floor(Math.random()*words.length);
+  return {index,word:words[index]};
+}
